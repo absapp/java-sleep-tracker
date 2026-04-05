@@ -35,63 +35,63 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void TOTAL_SESSIONS_shouldReturnCorrectCount() {
+    void totalSessionShouldReturnCorrectCount() {
         String result = SleepAnalyzer.TOTAL_SESSIONS.analyze(sessions);
         assertTrue(result.contains("3"));
     }
 
     @Test
-    void TOTAL_SESSIONS_shouldReturnZero_whenEmptyList() {
+    void totalSessionShouldReturnZero_whenEmptyList() {
         String result = SleepAnalyzer.TOTAL_SESSIONS.analyze(new ArrayList<>());
         assertTrue(result.contains("0"));
     }
 
     @Test
-    void SHORTEST_SLEEP_shouldReturnShortestDuration() {
+    void shortestSleepShouldReturnShortestDuration() {
         String result = SleepAnalyzer.SHORTEST_SLEEP.analyze(sessions);
         assertTrue(result.contains("4ч") || result.contains("4ч")); // 01:00 до 05:00 = 4 часа
     }
 
     @Test
-    void SHORTEST_SLEEP_shouldReturnNoData_whenEmptyList() {
+    void shortestSleepShouldReturnNoData_whenEmptyList() {
         String result = SleepAnalyzer.SHORTEST_SLEEP.analyze(new ArrayList<>());
         assertEquals("Нет данных", result);
     }
 
     @Test
-    void LONGEST_SLEEP_shouldReturnLongestDuration() {
+    void longestSleepShouldReturnLongestDuration() {
         String result = SleepAnalyzer.LONGEST_SLEEP.analyze(sessions);
         assertTrue(result.contains("9ч")); // 23:00 до 08:00 = 9 часов
     }
 
     @Test
-    void LONGEST_SLEEP_shouldReturnNoData_whenEmptyList() {
+    void longestSleepShouldReturnNoData_whenEmptyList() {
         String result = SleepAnalyzer.LONGEST_SLEEP.analyze(new ArrayList<>());
         assertEquals("Нет данных", result);
     }
 
     @Test
-    void AVERAGE_DURATION_shouldCalculateCorrectAverage() {
+    void averageDurationShouldCalculateCorrectAverage() {
         // 9ч + 9ч + 4ч = 22ч / 3 = 7ч 20мин (округление)
         String result = SleepAnalyzer.AVERAGE_DURATION.analyze(sessions);
         assertTrue(result.contains("7ч") || result.contains("7"));
     }
 
     @Test
-    void AVERAGE_DURATION_shouldReturnZero_whenEmptyList() {
+    void averageDurationShouldReturnZero_whenEmptyList() {
         String result = SleepAnalyzer.AVERAGE_DURATION.analyze(new ArrayList<>());
         assertTrue(result.contains("0ч"));
     }
 
 
     @Test
-    void BAD_SESSIONS_shouldCountOnlyBadSessions() {
+    void badSessionShouldCountOnlyBadSessions() {
         String result = SleepAnalyzer.BAD_SESSIONS.analyze(sessions);
         assertTrue(result.contains("1"));
     }
 
     @Test
-    void BAD_SESSIONS_shouldReturnZero_whenNoBadSessions() {
+    void badSessionShouldReturnZero_whenNoBadSessions() {
         List<SleepingSession> goodSessions = new ArrayList<>();
         goodSessions.add(new SleepingSession(
                 LocalDateTime.now(), LocalDateTime.now().plusHours(8), SleepQuality.GOOD
@@ -101,7 +101,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void UNSLEEP_NIGHT_shouldCountOnlyUnsleepDays() {
+    void unsleepNightShouldCountOnlyUnsleepDays() {
         sessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 4, 7, 0),
                 LocalDateTime.of(2025, 4, 4, 9, 0),
@@ -112,7 +112,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void UNSLEEP_NIGHT_shouldReturnZero_whenNoUnsleepDays() {
+    void unsleepNightShouldReturnZero_whenNoUnsleepDays() {
         List<SleepingSession> nightSessions = new ArrayList<>();
         nightSessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 1, 23, 0),
@@ -124,7 +124,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void UNSLEEP_NIGHT_shouldNotCountSessionsThatStartBefore6am() {
+    void unsleepNightShouldNotCountSessionsThatStartBefore6am() {
         sessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 4, 5, 0),
                 LocalDateTime.of(2025, 4, 4, 6, 30),
@@ -141,7 +141,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void UNSLEEP_NIGHT_shouldCountSessionThatStartAt7am() {
+    void unsleepNightShouldCountSessionThatStartAt7am() {
         sessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 4, 7, 0),
                 LocalDateTime.of(2025, 4, 4, 8, 0),
@@ -152,7 +152,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void CHRONOTYPE_shouldReturnOWL_whenMostSessionsAreOwl() {
+    void chronotypeShouldReturnOWL_whenMostSessionsAreOwl() {
         List<SleepingSession> owlSessions = new ArrayList<>();
         owlSessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 1, 23, 30),
@@ -175,7 +175,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void CHRONOTYPE_shouldReturnLARK_whenMostSessionsAreLark() {
+    void chronotypeShouldReturnLARK_whenMostSessionsAreLark() {
         List<SleepingSession> larkSessions = new ArrayList<>();
         larkSessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 1, 21, 0),
@@ -198,7 +198,7 @@ public class SleepTrackerAppTest {
     }
 
     @Test
-    void CHRONOTYPE_shouldReturnDOVE_whenMostSessionsAreDove() {
+    void chronotypeShouldReturnDOVE_whenMostSessionsAreDove() {
         List<SleepingSession> doveSessions = new ArrayList<>();
         doveSessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 1, 22, 30),

@@ -10,8 +10,8 @@ public class SleepingSession {
     private final LocalDateTime startSleeping;
     private final LocalDateTime endSleeping;
     private final SleepQuality sleepQuality;
-    private final static LocalTime START_NIGHT = LocalTime.of(00, 00);
-    private final static LocalTime END_NIGHT = LocalTime.of(06, 00);
+    private static final LocalTime START_NIGHT = LocalTime.of(00, 00);
+    private static final LocalTime END_NIGHT = LocalTime.of(06, 00);
 
     public SleepingSession(LocalDateTime startSleeping, LocalDateTime endSleeping, SleepQuality sleepQuality) {
         if (startSleeping.isAfter(endSleeping)) {

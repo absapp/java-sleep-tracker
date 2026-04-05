@@ -28,7 +28,9 @@ public class SleepingSessionLoader {
         if (!Files.exists(logFile)) {
             throw new FileNotFoundException("Файл не найден: " + logFile.toString());
 
-        } try (Stream<String> sleepAnalyses = Files.lines(logFile)) {
+        }
+
+        try (Stream<String> sleepAnalyses = Files.lines(logFile)) {
             return sleepAnalyses
                     .filter(line -> !line.isEmpty())
                     .map(line -> line.split(";"))

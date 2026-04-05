@@ -6,7 +6,7 @@ public enum Chronotype {
     DOVE("Голубь");
 
     private final String description;
-    
+
     Chronotype(String description) {
         this.description = description;
     }

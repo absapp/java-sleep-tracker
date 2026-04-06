@@ -15,6 +15,7 @@ public class SleepAnalysisResult<T> {
     public String getDescription() {
         return description;
     }
+    
     public T getResult() {
         return result;
     }

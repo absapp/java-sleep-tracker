@@ -27,7 +27,6 @@ public class SleepingSessionLoader {
     public List<SleepingSession> getSleepingSessions() throws IOException {
         if (!Files.exists(logFile)) {
             throw new FileNotFoundException("Файл не найден: " + logFile.toString());
-
         }
 
         try (Stream<String> sleepAnalyses = Files.lines(logFile)) {
@@ -35,33 +34,35 @@ public class SleepingSessionLoader {
                     .filter(line -> !line.isEmpty())
                     .map(line -> line.split(";"))
                     .filter(parts -> parts.length == 3)
-                    .map(parts -> {
-                        String startTime = parts[0].trim();
-                        String endTime = parts[1].trim();
-                        String status = parts[2].trim();
-                        Optional<LocalDateTime> startOpt = parseDateTime(startTime);
-                        Optional<LocalDateTime> endOpt = parseDateTime(endTime);
-
-                        if (startOpt.isEmpty() || endOpt.isEmpty()) {
-                            logger.log("Пропущена запись с null-значениями");
-                            return null;
-                        }
-
-                        LocalDateTime start = startOpt.get();
-                        LocalDateTime end = endOpt.get();
-
-                        SleepQuality quality = parseSleepQuality(status);
-                        if (quality == SleepQuality.INDETERMINATE) {
-                            logger.log("Неизвестное качество сна: '" + status +
-                                    "' в записи: " + startTime + ";" + endTime + ";" + status);
-                        }
-
-                        return new SleepingSession(start, end, quality);
-                    })
+                    .map(this::createSleepingSession)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         }
+    }
 
+    private SleepingSession createSleepingSession(String[] parts) {
+        String startTime = parts[0].trim();
+        String endTime = parts[1].trim();
+        String status = parts[2].trim();
+
+        Optional<LocalDateTime> startOpt = parseDateTime(startTime);
+        Optional<LocalDateTime> endOpt = parseDateTime(endTime);
+
+        if (startOpt.isEmpty() || endOpt.isEmpty()) {
+            logger.log("Пропущена запись с null-значениями: " + startTime + ";" + endTime + ";" + status);
+            return null;
+        }
+
+        LocalDateTime start = startOpt.get();
+        LocalDateTime end = endOpt.get();
+
+        SleepQuality quality = parseSleepQuality(status);
+        if (quality == SleepQuality.INDETERMINATE) {
+            logger.log("Неизвестное качество сна: '" + status +
+                    "' в записи: " + startTime + ";" + endTime + ";" + status);
+        }
+
+        return new SleepingSession(start, end, quality);
     }
 
     private SleepQuality parseSleepQuality(String status) {

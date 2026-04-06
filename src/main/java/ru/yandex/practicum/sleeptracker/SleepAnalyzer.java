@@ -1,6 +1,6 @@
 package ru.yandex.practicum.sleeptracker;
 
-import java.util.Comparator;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,82 +9,75 @@ public enum SleepAnalyzer implements SleepFunction {
 
     TOTAL_SESSIONS {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
-            return "Всего сессий: " + sessions.size();
+        public SleepAnalysisResult<Long> analyze(List<SleepingSession> sessions) {
+            long count = sessions.size();
+            return new SleepAnalysisResult<>("Всего сессий", count);
         }
     },
 
     SHORTEST_SLEEP {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
-            return sessions.stream()
-                    .min(Comparator.comparing(SleepingSession::getDuration))
-                    .map(session -> {
-                        long hours = session.getDuration().toHours();
-                        long minutes = session.getDuration().toMinutesPart();
-                        return "Самая короткая сессия: " + hours + "ч " + minutes + "мин";
-                    })
-                    .orElse("Нет данных");
+        public SleepAnalysisResult<Duration> analyze(List<SleepingSession> sessions) {
+            Duration shortest = sessions.stream()
+                    .map(SleepingSession::getDuration)
+                    .min(Duration::compareTo)
+                    .orElse(null);
+            return new SleepAnalysisResult<>("Самая короткая сессия", shortest);
         }
     },
 
     LONGEST_SLEEP {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
-            return sessions.stream()
-                    .max(Comparator.comparing(SleepingSession::getDuration))
-                    .map(session -> {
-                        long hours = session.getDuration().toHours();
-                        long minutes = session.getDuration().toMinutesPart();
-                        return "Самая долгая сессия: " + hours + "ч " + minutes + "мин";
-                    })
-                    .orElse("Нет данных");
+        public SleepAnalysisResult<Duration> analyze(List<SleepingSession> sessions) {
+            Duration longest = sessions.stream()
+                    .map(SleepingSession::getDuration)
+                    .max(Duration::compareTo)
+                    .orElse(null);
+            return new SleepAnalysisResult<>("Самая долгая сессия", longest);
         }
     },
 
     AVERAGE_DURATION {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
+        public SleepAnalysisResult<Double> analyze(List<SleepingSession> sessions) {
             double avgMinutes = sessions.stream()
                     .mapToLong(s -> s.getDuration().toMinutes())
                     .average()
                     .orElse(0);
-            long hours = (long) avgMinutes / 60;
-            long minutes = Math.round(avgMinutes % 60);
-            return "Средняя длительность сна: " + hours + "ч " + minutes + "мин";
+            return new SleepAnalysisResult<>("Средняя длительность сна (мин)", avgMinutes);
         }
     },
 
     BAD_SESSIONS {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
+        public SleepAnalysisResult<Long> analyze(List<SleepingSession> sessions) {
             long count = sessions.stream()
                     .filter(s -> s.getSleepQuality() == SleepQuality.BAD)
                     .count();
-            return "Плохой сон (BAD): " + count;
+            return new SleepAnalysisResult<>("Плохой сон (BAD)", count);
         }
     },
 
     UNSLEEP_NIGHT {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
+        public SleepAnalysisResult<Long> analyze(List<SleepingSession> sessions) {
             long count = sessions.stream()
-                    .filter(s -> (s.isUnSleepDay()))
+                    .filter(SleepingSession::isUnSleepDay)
                     .count();
-            return "Бессонных ночей " + count;
+            return new SleepAnalysisResult<>("Бессонных ночей", count);
         }
     },
 
     CHRONOTYPE {
         @Override
-        public String analyze(List<SleepingSession> sessions) {
+        public SleepAnalysisResult<Chronotype> analyze(List<SleepingSession> sessions) {
             Map<Chronotype, Long> counts = sessions.stream()
-                    .filter(s -> s.isNightSleep())
+                    .filter(SleepingSession::isNightSleep)
                     .map(SleepingSession::getChronotype)
                     .collect(Collectors.groupingBy(c -> c, Collectors.counting()));
 
             if (counts.isEmpty()) {
-                return "Недостаточно данных для определения хронотипа";
+                return new SleepAnalysisResult<>("Хронотип", null);
             }
 
             Chronotype result = counts.entrySet().stream()
@@ -92,7 +85,7 @@ public enum SleepAnalyzer implements SleepFunction {
                     .map(Map.Entry::getKey)
                     .orElse(Chronotype.DOVE);
 
-            return "Ваш хронотип: " + result.getDescription();
+            return new SleepAnalysisResult<>("Ваш хронотип", result);
         }
-    }
+    };
 }

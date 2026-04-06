@@ -3,12 +3,12 @@ package ru.yandex.practicum.sleeptracker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SleepTrackerAppTest {
 
@@ -36,58 +36,68 @@ public class SleepTrackerAppTest {
 
     @Test
     void totalSessionShouldReturnCorrectCount() {
-        String result = SleepAnalyzer.TOTAL_SESSIONS.analyze(sessions);
-        assertTrue(result.contains("3"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.TOTAL_SESSIONS.analyze(sessions);
+        assertEquals(3L, result.getResult());
+        assertTrue(result.toString().contains("3"));
     }
 
     @Test
     void totalSessionShouldReturnZero_whenEmptyList() {
-        String result = SleepAnalyzer.TOTAL_SESSIONS.analyze(new ArrayList<>());
-        assertTrue(result.contains("0"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.TOTAL_SESSIONS.analyze(new ArrayList<>());
+        assertEquals(0L, result.getResult());
+        assertTrue(result.toString().contains("0"));
     }
 
     @Test
     void shortestSleepShouldReturnShortestDuration() {
-        String result = SleepAnalyzer.SHORTEST_SLEEP.analyze(sessions);
-        assertTrue(result.contains("4ч") || result.contains("4ч")); // 01:00 до 05:00 = 4 часа
+        SleepAnalysisResult<?> result = SleepAnalyzer.SHORTEST_SLEEP.analyze(sessions);
+        Duration shortest = (Duration) result.getResult();
+        assertEquals(4, shortest.toHours());
+        assertTrue(result.toString().contains("4ч"));
     }
 
     @Test
     void shortestSleepShouldReturnNoData_whenEmptyList() {
-        String result = SleepAnalyzer.SHORTEST_SLEEP.analyze(new ArrayList<>());
-        assertEquals("Нет данных", result);
+        SleepAnalysisResult<?> result = SleepAnalyzer.SHORTEST_SLEEP.analyze(new ArrayList<>());
+        assertNull(result.getResult());
+        assertEquals("Самая короткая сессия: Нет данных", result.toString());
     }
 
     @Test
     void longestSleepShouldReturnLongestDuration() {
-        String result = SleepAnalyzer.LONGEST_SLEEP.analyze(sessions);
-        assertTrue(result.contains("9ч")); // 23:00 до 08:00 = 9 часов
+        SleepAnalysisResult<?> result = SleepAnalyzer.LONGEST_SLEEP.analyze(sessions);
+        Duration longest = (Duration) result.getResult();
+        assertEquals(9, longest.toHours());
+        assertTrue(result.toString().contains("9ч"));
     }
 
     @Test
     void longestSleepShouldReturnNoData_whenEmptyList() {
-        String result = SleepAnalyzer.LONGEST_SLEEP.analyze(new ArrayList<>());
-        assertEquals("Нет данных", result);
+        SleepAnalysisResult<?> result = SleepAnalyzer.LONGEST_SLEEP.analyze(new ArrayList<>());
+        assertNull(result.getResult());
+        assertEquals("Самая долгая сессия: Нет данных", result.toString());
     }
 
     @Test
     void averageDurationShouldCalculateCorrectAverage() {
-        // 9ч + 9ч + 4ч = 22ч / 3 = 7ч 20мин (округление)
-        String result = SleepAnalyzer.AVERAGE_DURATION.analyze(sessions);
-        assertTrue(result.contains("7ч") || result.contains("7"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.AVERAGE_DURATION.analyze(sessions);
+        Double avg = (Double) result.getResult();
+        assertEquals(440.0, avg, 0.01);
+        assertTrue(result.toString().contains("440.0") || result.toString().contains("440"));
     }
 
     @Test
     void averageDurationShouldReturnZero_whenEmptyList() {
-        String result = SleepAnalyzer.AVERAGE_DURATION.analyze(new ArrayList<>());
-        assertTrue(result.contains("0ч"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.AVERAGE_DURATION.analyze(new ArrayList<>());
+        assertEquals(0.0, (Double) result.getResult(), 0.01);
+        assertTrue(result.toString().contains("0"));
     }
-
 
     @Test
     void badSessionShouldCountOnlyBadSessions() {
-        String result = SleepAnalyzer.BAD_SESSIONS.analyze(sessions);
-        assertTrue(result.contains("1"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.BAD_SESSIONS.analyze(sessions);
+        assertEquals(1L, result.getResult());
+        assertTrue(result.toString().contains("1"));
     }
 
     @Test
@@ -96,8 +106,9 @@ public class SleepTrackerAppTest {
         goodSessions.add(new SleepingSession(
                 LocalDateTime.now(), LocalDateTime.now().plusHours(8), SleepQuality.GOOD
         ));
-        String result = SleepAnalyzer.BAD_SESSIONS.analyze(goodSessions);
-        assertTrue(result.contains("0"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.BAD_SESSIONS.analyze(goodSessions);
+        assertEquals(0L, result.getResult());
+        assertTrue(result.toString().contains("0"));
     }
 
     @Test
@@ -107,8 +118,9 @@ public class SleepTrackerAppTest {
                 LocalDateTime.of(2025, 4, 4, 9, 0),
                 SleepQuality.NORMAL
         ));
-        String result = SleepAnalyzer.UNSLEEP_NIGHT.analyze(sessions);
-        assertTrue(result.contains("1"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.UNSLEEP_NIGHT.analyze(sessions);
+        assertEquals(1L, result.getResult());
+        assertTrue(result.toString().contains("1"));
     }
 
     @Test
@@ -119,25 +131,29 @@ public class SleepTrackerAppTest {
                 LocalDateTime.of(2025, 4, 2, 7, 0),
                 SleepQuality.GOOD
         ));
-        String result = SleepAnalyzer.UNSLEEP_NIGHT.analyze(nightSessions);
-        assertTrue(result.contains("0"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.UNSLEEP_NIGHT.analyze(nightSessions);
+        assertEquals(0L, result.getResult());
+        assertTrue(result.toString().contains("0"));
     }
 
     @Test
     void unsleepNightShouldNotCountSessionsThatStartBefore6am() {
-        sessions.add(new SleepingSession(
+        List<SleepingSession> testSessions = new ArrayList<>(sessions);
+        testSessions.add(new SleepingSession(
                 LocalDateTime.of(2025, 4, 4, 5, 0),
                 LocalDateTime.of(2025, 4, 4, 6, 30),
                 SleepQuality.NORMAL
         ));
-        long countBefore = Long.parseLong(SleepAnalyzer.UNSLEEP_NIGHT.analyze(sessions).replaceAll("\\D+", ""));
-        sessions.add(new SleepingSession(
-                LocalDateTime.of(2025, 4, 4, 5, 0),
-                LocalDateTime.of(2025, 4, 4, 6, 30),
+        SleepAnalysisResult<?> result1 = SleepAnalyzer.UNSLEEP_NIGHT.analyze(testSessions);
+
+        testSessions.add(new SleepingSession(
+                LocalDateTime.of(2025, 4, 5, 5, 0),
+                LocalDateTime.of(2025, 4, 5, 6, 30),
                 SleepQuality.NORMAL
         ));
-        long countAfter = Long.parseLong(SleepAnalyzer.UNSLEEP_NIGHT.analyze(sessions).replaceAll("\\D+", ""));
-        assertEquals(countBefore, countAfter);
+        SleepAnalysisResult<?> result2 = SleepAnalyzer.UNSLEEP_NIGHT.analyze(testSessions);
+
+        assertEquals(result1.getResult(), result2.getResult());
     }
 
     @Test
@@ -147,8 +163,9 @@ public class SleepTrackerAppTest {
                 LocalDateTime.of(2025, 4, 4, 8, 0),
                 SleepQuality.NORMAL
         ));
-        String result = SleepAnalyzer.UNSLEEP_NIGHT.analyze(sessions);
-        assertTrue(result.contains("1"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.UNSLEEP_NIGHT.analyze(sessions);
+        assertEquals(1L, result.getResult());
+        assertTrue(result.toString().contains("1"));
     }
 
     @Test
@@ -170,8 +187,9 @@ public class SleepTrackerAppTest {
                 SleepQuality.NORMAL
         ));
 
-        String result = SleepAnalyzer.CHRONOTYPE.analyze(owlSessions);
-        assertTrue(result.contains("Сова"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.CHRONOTYPE.analyze(owlSessions);
+        assertEquals(Chronotype.OWL, result.getResult());
+        assertTrue(result.toString().contains("Сова"));
     }
 
     @Test
@@ -193,8 +211,9 @@ public class SleepTrackerAppTest {
                 SleepQuality.NORMAL
         ));
 
-        String result = SleepAnalyzer.CHRONOTYPE.analyze(larkSessions);
-        assertTrue(result.contains("Жаворонок"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.CHRONOTYPE.analyze(larkSessions);
+        assertEquals(Chronotype.LARK, result.getResult());
+        assertTrue(result.toString().contains("Жаворонок"));
     }
 
     @Test
@@ -216,7 +235,8 @@ public class SleepTrackerAppTest {
                 SleepQuality.NORMAL
         ));
 
-        String result = SleepAnalyzer.CHRONOTYPE.analyze(doveSessions);
-        assertTrue(result.contains("Голубь"));
+        SleepAnalysisResult<?> result = SleepAnalyzer.CHRONOTYPE.analyze(doveSessions);
+        assertEquals(Chronotype.DOVE, result.getResult());
+        assertTrue(result.toString().contains("Голубь"));
     }
 }

@@ -5,5 +5,5 @@ import java.util.List;
 @FunctionalInterface
 public interface SleepFunction {
 
-    String analyze(List<SleepingSession> sleepingSession);
+    SleepAnalysisResult<?> analyze(List<SleepingSession> sleepingSession);
 }
